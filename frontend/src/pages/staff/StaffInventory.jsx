@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import Layout from '../../components/Layout';
 import AdminLayout from '../../components/admin/AdminLayout';
 import { useAuth } from '../../context/AuthContext';
@@ -6,9 +6,12 @@ import { productApi, categoryApi } from '../../api/services';
 import { getCategoryTheme } from '../../utils/categoryTheme';
 import { 
   AlertTriangle, Clock, Plus, X, Download, 
-  Search, Package, MoreVertical, Edit2
+  Search, Package, Trash2, Edit2
 } from 'lucide-react';
 import { downloadInventoryPDF } from '../../utils/pdfInvoice';
+import { confirmAction } from '../../utils/confirmAction';
+import { notify, notifyApiError } from '../../utils/notifications';
+import { createSubmissionGate } from '../../utils/submissionGate';
 
 const emptyForm = {
   name: '', category: '', unit: 'kg', stockQuantity: 0, lowStockThreshold: 10,
@@ -31,6 +34,16 @@ export default function StaffInventory() {
   const [categoryForm, setCategoryForm] = useState({ name: '', type: 'other', description: '' });
   const [search, setSearch] = useState('');
   const [loadError, setLoadError] = useState(null);
+  const [deletingCategory, setDeletingCategory] = useState(null);
+  const [showDeleteCategory, setShowDeleteCategory] = useState(false);
+  const [selectedCategoryId, setSelectedCategoryId] = useState('');
+  const deleteDialog = useRef(null);
+  const [runCategoryDelete] = useState(() => createSubmissionGate());
+
+  useEffect(() => {
+    if (showDeleteCategory) deleteDialog.current.showModal();
+    else deleteDialog.current.close();
+  }, [showDeleteCategory]);
 
   const load = async () => {
     setLoadError(null);
@@ -89,6 +102,32 @@ export default function StaffInventory() {
     setShowCategoryForm(false);
   };
 
+  const handleDeleteCategory = category => runCategoryDelete(async () => {
+    if (user?.role !== 'admin') return;
+    setDeletingCategory(category._id);
+    try {
+      if (!await confirmAction({ title: `Delete ${category.name}?`, text: 'This permanently removes the category. Products using it must first be moved to another category.', confirmButtonText: 'Delete category' })) return;
+      await categoryApi.remove(category._id);
+      setCategories(previous => previous.filter(item => item._id !== category._id));
+      setForm(previous => previous.category === category._id ? { ...previous, category: '' } : previous);
+      notify.success('Category deleted successfully.');
+    } catch (error) {
+      notifyApiError(error, 'Unable to delete category. Please try again.');
+    } finally {
+      setDeletingCategory(null);
+    }
+  });
+
+  const submitDeleteCategory = event => {
+    event.preventDefault();
+    const category = categories.find(item => item._id === selectedCategoryId);
+    if (!category) return;
+    deleteDialog.current.close();
+    setShowDeleteCategory(false);
+    setSelectedCategoryId('');
+    void handleDeleteCategory(category);
+  };
+
   const filteredProducts = products.filter(p => 
     !search || (p.name?.toLowerCase() || '').includes(search.toLowerCase()) || 
     (p.category?.name?.toLowerCase() || '').includes(search.toLowerCase())
@@ -125,6 +164,9 @@ export default function StaffInventory() {
           <button onClick={() => setShowCategoryForm(true)} className="flex items-center gap-2 bg-white border border-brand-200 text-brand-700 hover:bg-brand-50 px-4 py-2.5 rounded-xl text-sm font-semibold transition-colors shadow-sm">
             <Plus size={16} /> Category
           </button>
+          {user?.role === 'admin' && <button onClick={() => setShowDeleteCategory(true)} disabled={!categories.length || !!deletingCategory} className="ui-btn ui-btn-outline text-red-700 border-red-200 hover:bg-red-50 hover:text-red-800 hover:border-red-300">
+            <Trash2 size={16} /> Delete Category
+          </button>}
           <button onClick={openNew} className="flex items-center gap-2 bg-brand-600 hover:bg-brand-700 text-white px-4 py-2.5 rounded-xl text-sm font-semibold transition-colors shadow-sm">
             <Plus size={16} /> Add Product
           </button>
@@ -272,6 +314,27 @@ export default function StaffInventory() {
       </div>
 
       {/* Modals */}
+      {user?.role === 'admin' && <dialog ref={deleteDialog} className="ui-modal" data-theme="kbr" aria-labelledby="delete-category-title" onCancel={() => setShowDeleteCategory(false)}>
+        <div className="ui-modal-box bg-white text-gray-900">
+          <div className="flex items-center justify-between mb-5">
+            <h2 id="delete-category-title" className="text-xl font-bold">Delete Category</h2>
+            <button type="button" onClick={() => setShowDeleteCategory(false)} aria-label="Close category dialog" className="ui-btn ui-btn-sm ui-btn-circle ui-btn-ghost"><X size={18} /></button>
+          </div>
+          <form onSubmit={submitDeleteCategory} className="space-y-4">
+            <label className="block text-sm font-semibold text-gray-700">Category to delete
+              <select required value={selectedCategoryId} onChange={event => setSelectedCategoryId(event.target.value)} className="ui-select ui-select-bordered w-full mt-1 bg-white">
+                <option value="">Select a category…</option>
+                {categories.map(category => <option key={category._id} value={category._id}>{category.name}</option>)}
+              </select>
+            </label>
+            <p className="text-sm text-gray-600">Products using the category must be moved to another category before it can be deleted.</p>
+            <div className="ui-modal-action">
+              <button type="button" onClick={() => setShowDeleteCategory(false)} className="ui-btn ui-btn-ghost">Cancel</button>
+              <button type="submit" disabled={!selectedCategoryId} className="ui-btn bg-red-600 text-white hover:bg-red-700 border-red-600">Delete Category</button>
+            </div>
+          </form>
+        </div>
+      </dialog>}
       {showCategoryForm && (
         <div className="fixed inset-0 bg-gray-900/40 backdrop-blur-sm flex items-center justify-center z-50 p-4 animate-fade-in">
           <div className="bg-white rounded-2xl p-6 w-full max-w-md shadow-2xl animate-fade-in-up">
