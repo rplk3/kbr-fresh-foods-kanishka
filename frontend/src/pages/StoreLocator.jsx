@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import Layout from '../components/Layout';
+import HeroSlider from '../components/HeroSlider';
 import { storeApi } from '../api/services';
 import { MapPin, Phone, Clock, Store, ChevronRight, Package } from 'lucide-react';
 
@@ -16,6 +17,13 @@ const STORE_BANNER_BY_TYPE = {
   'Keells': '/keells_interior.png',
   'Food City': '/foodcity_interior.png',
 };
+
+// Hero slider images — store & retail photography
+const STORE_HERO_IMAGES = [
+  'https://images.unsplash.com/photo-1604719312566-8912e9227c6a?auto=format&fit=crop&w=1600&q=85',
+  'https://images.unsplash.com/photo-1578916171728-46686eac8d58?auto=format&fit=crop&w=1600&q=85',
+  'https://images.unsplash.com/photo-1534723452862-4c874018d66d?auto=format&fit=crop&w=1600&q=85',
+];
 
 // Helper: thumbnail for list card
 const getStoreThumb = (store) => STORE_IMAGES_BY_TYPE[store.type] || STORE_IMAGES_BY_TYPE['KBR Retail'];
@@ -73,19 +81,13 @@ export default function StoreLocator() {
 
   return (
     <Layout>
-      {/* Hero */}
-      <div className="relative overflow-hidden rounded-3xl mb-10 bg-gradient-to-br from-brand-800 to-brand-600 p-10 text-white text-center">
-        <div className="absolute inset-0 opacity-10 bg-[url('https://images.unsplash.com/photo-1610832958506-aa56368176cf?w=1200')] bg-cover bg-center" />
-        <div className="relative z-10">
-          <div className="inline-flex items-center gap-2 bg-white/20 backdrop-blur-sm rounded-full px-4 py-1.5 text-sm font-medium mb-4">
-            <MapPin size={14} /> {stores.length > 0 ? `${stores.length} Locations across Negombo` : '7 Locations across Negombo'}
-          </div>
-          <h1 className="text-4xl md:text-5xl font-display font-bold mb-3">Find a Store Near You</h1>
-          <p className="text-green-100 text-lg max-w-xl mx-auto">
-            KBR Fresh Foods supplies Keells Super, Food City, and operates our own retail stores across Negombo, Sri Lanka.
-          </p>
-        </div>
-      </div>
+      {/* Hero with sliding store images */}
+      <HeroSlider
+        images={STORE_HERO_IMAGES}
+        badge={{ icon: <MapPin size={14} />, text: stores.length > 0 ? `${stores.length} Locations across Negombo` : '7 Locations across Negombo' }}
+        title="Find a Store Near You"
+        subtitle="KBR Fresh Foods supplies Keells Super, Food City, and operates our own retail stores across Negombo, Sri Lanka."
+      />
 
       {/* Filters */}
       <div className="flex flex-col sm:flex-row gap-4 mb-8">

@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import Layout from '../components/Layout';
+import HeroSlider from '../components/HeroSlider';
 import { productApi, categoryApi } from '../api/services';
 import ProductCard from '../components/ProductCard';
 import { Search, Filter, SlidersHorizontal, ChevronDown, X, Leaf, PackageSearch } from 'lucide-react';
@@ -9,12 +10,29 @@ import { Search, Filter, SlidersHorizontal, ChevronDown, X, Leaf, PackageSearch 
 const CATEGORY_PHOTOS = {
   Banana:    '/cat_banana.png',
   Fruit:     '/cat_fruit.png',
+  Fruits:    '/cat_fruit.png',
   Vegetable: '/cat_vegetable.png',
-  OTHERS:    '/cat_others.png',
-  fruit:     '/cat_fruit.png',
-  vegetable: '/cat_vegetable.png',
-  other:     '/cat_others.png',
+  Vegetables:'/cat_vegetable.png',
+  Beverage:  '/cat_beverage.png',
+  Beverages:     '/cat_beverage.png',
+  'Rice & Grains':'/cat_grain.png',
+  Rice:          '/cat_grain.png',
+  Grain:         '/cat_grain.png',
+  Grains:        '/cat_grain.png',
+  OTHERS:        '/cat_others.png',
+  fruit:         '/cat_fruit.png',
+  vegetable:     '/cat_vegetable.png',
+  beverage:      '/cat_beverage.png',
+  grain:         '/cat_grain.png',
+  other:         '/cat_others.png',
 };
+
+// Hero slider images — fresh produce photography
+const PRODUCT_HERO_IMAGES = [
+  'https://images.unsplash.com/photo-1542838132-92c53300491e?auto=format&fit=crop&w=1600&q=85',
+  'https://images.unsplash.com/photo-1610832958506-aa56368176cf?auto=format&fit=crop&w=1600&q=85',
+  'https://images.unsplash.com/photo-1488459716781-31db52582fe9?auto=format&fit=crop&w=1600&q=85',
+];
 
 const SORT_OPTIONS = [
   { value: 'default', label: 'Featured' },
@@ -68,36 +86,23 @@ export default function Products() {
 
   const getCategoryPhoto = (cat) => {
     if (!cat) return CATEGORY_PHOTOS.Fruit;
-    return CATEGORY_PHOTOS[cat.name] || CATEGORY_PHOTOS[cat.type] || CATEGORY_PHOTOS.Fruit;
+    return CATEGORY_PHOTOS[cat.name] || CATEGORY_PHOTOS[cat.type?.toLowerCase()] || CATEGORY_PHOTOS.Fruit;
   };
 
   return (
     <Layout>
-      {/* Page Hero */}
-      <div className="relative overflow-hidden rounded-3xl mb-10 bg-gradient-to-br from-brand-900 to-brand-700 text-white">
-        <div
-          className="absolute inset-0 opacity-25 bg-cover bg-center"
-          style={{
-            backgroundImage: activeCategory
-              ? `url('${getCategoryPhoto(activeCategory)}')`
-              : `url('https://images.unsplash.com/photo-1542838132-92c53300491e?auto=format&fit=crop&w=1600&q=85')`,
-          }}
-        />
-        <div className="absolute inset-0 bg-gradient-to-r from-brand-900/85 to-brand-700/50" />
-        <div className="relative z-10 px-8 md:px-14 py-12">
-          <div className="inline-flex items-center gap-2 bg-white/15 border border-white/20 rounded-full px-4 py-1.5 text-xs font-bold uppercase tracking-wider mb-4">
-            <Leaf size={12} className="text-brand-300" />
-            {activeCategory ? activeCategory.name : 'All Products'}
-          </div>
-          <h1 className="text-3xl md:text-5xl font-display font-bold mb-3">
-            {activeCategory ? `Fresh ${activeCategory.name}` : 'KBR Fresh Foods Products'}
-          </h1>
-          <p className="text-brand-100 text-base max-w-xl">
-            Fresh produce sourced daily — bananas, fruits, vegetables & more from Negombo, Sri Lanka.
+      {/* Page Hero with sliding images */}
+      <HeroSlider
+        images={PRODUCT_HERO_IMAGES}
+        badge={{ icon: <Leaf size={14} className="text-brand-300" />, text: activeCategory ? activeCategory.name : 'All Products' }}
+        title={activeCategory ? `Fresh ${activeCategory.name}` : 'KBR Fresh Foods Products'}
+        subtitle={
+          <>
+            Fresh produce sourced daily — bananas, fruits, vegetables &amp; more from Negombo, Sri Lanka.
             {products.length > 0 && ` Showing ${sorted.length} products.`}
-          </p>
-        </div>
-      </div>
+          </>
+        }
+      />
 
       {/* Search + Filter Bar */}
       <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4 mb-8 flex flex-col sm:flex-row gap-3 items-center">

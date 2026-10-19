@@ -11,9 +11,41 @@ const CAT_CONFIG = {
     img: '/cat_fruit.png',
     gradient: 'from-orange-400 to-pink-500',
   },
+  Fruits: {
+    img: '/cat_fruit.png',
+    gradient: 'from-orange-400 to-pink-500',
+  },
   Vegetable: {
     img: '/cat_vegetable.png',
     gradient: 'from-green-500 to-emerald-700',
+  },
+  Vegetables: {
+    img: '/cat_vegetable.png',
+    gradient: 'from-green-500 to-emerald-700',
+  },
+  Beverage: {
+    img: '/cat_beverage.png',
+    gradient: 'from-rose-500 to-pink-600',
+  },
+  Beverages: {
+    img: '/cat_beverage.png',
+    gradient: 'from-rose-500 to-pink-600',
+  },
+  'Rice & Grains': {
+    img: '/cat_grain.png',
+    gradient: 'from-amber-600 to-stone-700',
+  },
+  Rice: {
+    img: '/cat_grain.png',
+    gradient: 'from-amber-600 to-stone-700',
+  },
+  Grain: {
+    img: '/cat_grain.png',
+    gradient: 'from-amber-600 to-stone-700',
+  },
+  Grains: {
+    img: '/cat_grain.png',
+    gradient: 'from-amber-600 to-stone-700',
   },
   OTHERS: {
     img: '/cat_others.png',
@@ -24,11 +56,14 @@ const CAT_CONFIG = {
 const TYPE_FALLBACK = {
   fruit: CAT_CONFIG.Fruit,
   vegetable: CAT_CONFIG.Vegetable,
+  beverage: CAT_CONFIG.Beverage,
+  grain: CAT_CONFIG['Rice & Grains'],
   other: CAT_CONFIG.OTHERS,
 };
 
 function getCatConfig(cat) {
-  return CAT_CONFIG[cat.name] || TYPE_FALLBACK[cat.type] || CAT_CONFIG.OTHERS;
+  if (!cat) return CAT_CONFIG.OTHERS;
+  return CAT_CONFIG[cat.name] || TYPE_FALLBACK[cat.type?.toLowerCase()] || CAT_CONFIG.OTHERS;
 }
 
 function CategoryCard({ cat, isActive, onClick, delay }) {
@@ -37,7 +72,7 @@ function CategoryCard({ cat, isActive, onClick, delay }) {
   return (
     <button
       onClick={onClick}
-      className={`relative overflow-hidden rounded-3xl aspect-[4/3] text-white transition-all hover:-translate-y-1 hover:shadow-xl animate-fade-in-up ${
+      className={`relative overflow-hidden rounded-3xl aspect-[4/3] text-white transition-all hover:-translate-y-1 hover:shadow-xl animate-fade-in-up group ${
         isActive ? 'ring-4 ring-brand-500 ring-offset-2 shadow-xl' : 'shadow-md'
       }`}
       style={{ animationDelay: `${delay}s` }}
@@ -45,23 +80,23 @@ function CategoryCard({ cat, isActive, onClick, delay }) {
       {/* Gradient fallback background — always visible beneath image */}
       <div className={`absolute inset-0 bg-gradient-to-br ${config.gradient}`} />
 
-      {/* Local image layered on top */}
+      {/* Category image — object-cover fills the 4:3 card edge-to-edge */}
       <img
         src={config.img}
         alt={cat.name}
-        className="absolute inset-0 w-full h-full object-cover"
+        className="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
         onError={(e) => { e.target.style.opacity = '0'; }}
       />
 
       {/* Dark gradient overlay for text readability */}
-      <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
+      <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/25 to-transparent pointer-events-none" />
 
       {isActive && <div className="absolute inset-0 bg-brand-700/25" />}
 
-      <div className="absolute bottom-0 left-0 right-0 p-4">
-        <p className="font-bold text-base leading-tight">{cat.name}</p>
+      <div className="absolute bottom-0 left-0 right-0 p-4 pointer-events-none text-left">
+        <p className="font-bold text-base leading-tight drop-shadow">{cat.name}</p>
         {cat.description && (
-          <p className="text-[11px] text-white/70 mt-0.5 leading-tight line-clamp-1">{cat.description}</p>
+          <p className="text-[11px] text-white/80 mt-0.5 leading-tight line-clamp-1 drop-shadow">{cat.description}</p>
         )}
       </div>
 

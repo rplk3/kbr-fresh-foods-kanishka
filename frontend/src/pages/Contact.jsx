@@ -1,7 +1,15 @@
 import { useState } from 'react';
 import Layout from '../components/Layout';
+import HeroSlider from '../components/HeroSlider';
 import { contactApi } from '../api/services';
 import { MapPin, Phone, Mail, Clock, Send, CheckCircle, Loader } from 'lucide-react';
+
+// Hero slider images — fresh foods & customer connection (unique to Contact)
+const CONTACT_HERO_IMAGES = [
+  'https://images.unsplash.com/photo-1464226184884-fa280b87c399?auto=format&fit=crop&w=1600&q=85',
+  'https://images.unsplash.com/photo-1606787366850-de6330128bfc?auto=format&fit=crop&w=1600&q=85',
+  'https://images.unsplash.com/photo-1595855759920-86582396756a?auto=format&fit=crop&w=1600&q=85',
+];
 
 export default function Contact() {
   const [form, setForm] = useState({ name: '', email: '', phone: '', subject: '', message: '' });
@@ -28,20 +36,13 @@ export default function Contact() {
 
   return (
     <Layout>
-      {/* Hero */}
-      <div className="relative overflow-hidden rounded-[2.5rem] mb-16 bg-gradient-to-br from-brand-900 to-brand-800 p-12 md:p-20 text-white text-center shadow-xl">
-        <div className="absolute inset-0 opacity-40 bg-[url('https://images.unsplash.com/photo-1542838132-92c53300491e?auto=format&fit=crop&w=1600&q=80')] bg-cover bg-center mix-blend-overlay" />
-        <div className="absolute inset-0 bg-gradient-to-t from-brand-900/90 to-transparent" />
-        <div className="relative z-10">
-          <div className="inline-flex items-center gap-2 bg-white/20 backdrop-blur-sm border border-white/20 rounded-full px-5 py-2 text-xs font-bold tracking-widest uppercase mb-6 shadow-sm">
-            <Mail size={14} className="text-brand-300" /> Get in Touch
-          </div>
-          <h1 className="text-4xl md:text-6xl font-display font-bold mb-4 drop-shadow-md">Contact KBR Fresh Foods</h1>
-          <p className="text-brand-100 text-lg max-w-xl mx-auto drop-shadow leading-relaxed">
-            Have a question about our products, wholesale orders, or delivery? We're here to help.
-          </p>
-        </div>
-      </div>
+      {/* Hero with sliding images */}
+      <HeroSlider
+        images={CONTACT_HERO_IMAGES}
+        badge={{ icon: <Mail size={14} className="text-brand-300" />, text: 'Get in Touch' }}
+        title="Contact KBR Fresh Foods"
+        subtitle="Have a question about our products, wholesale orders, or delivery? We're here to help."
+      />
 
       <div className="max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-5 gap-12 mb-16">
         {/* Contact Info */}
